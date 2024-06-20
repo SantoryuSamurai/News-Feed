@@ -14,7 +14,7 @@
         }
 
         .container {
-            max-width: 800px;
+            max-width: 1200px;
             margin: 20px auto;
             background-color: #fff;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -28,42 +28,9 @@
             color: #333;
         }
 
-        form {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        label {
-            font-weight: bold;
-            margin-right: 10px;
-        }
-
-        select, button {
-            padding: 10px;
-            font-size: 16px;
-            border: none;
-            background-color: #007bff;
-            color: #fff;
-            cursor: pointer;
-            border-radius: 4px;
-        }
-
-        select {
-            margin-right: 10px;
-        }
-
-        button {
-            transition: background-color 0.3s ease;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
         #articles {
             display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
         }
 
@@ -74,6 +41,12 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        .article:hover {
+            transform: translateY(-5px);
         }
 
         .article img {
@@ -85,10 +58,11 @@
 
         .article-content {
             padding: 20px;
+            flex: 1;
         }
 
         .article h2 {
-            font-size: 24px;
+            font-size: 20px;
             margin-bottom: 10px;
             color: #333;
         }
@@ -96,6 +70,12 @@
         .article p {
             color: #666;
             line-height: 1.6;
+            margin-bottom: 10px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
         }
 
         .article a {
@@ -112,25 +92,12 @@
 </head>
 <body>
     <div class="container">
-        <h1>Latest News Feed</h1>
-        <form id="news-form">
-            <label for="country">Select Country:</label>
-            <select id="country">
-                <option value="us">United States</option>
-                <option value="gb">United Kingdom</option>
-                <option value="ca">Canada</option>
-                <option value="au">Australia</option>
-                <!-- Add more countries as needed -->
-            </select>
-            <button type="submit">Get News</button>
-        </form>
+        <h1>Latest Worldwide News Feed</h1>
         <div id="articles"></div>
     </div>
     <script>
-        document.getElementById('news-form').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const country = document.getElementById('country').value;
-            fetch(`/news?country=${country}`)
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/news')
                 .then(response => response.json())
                 .then(data => {
                     const articlesDiv = document.getElementById('articles');
@@ -154,7 +121,7 @@
                             articleContentDiv.innerHTML = `
                                 <h2>${article.title}</h2>
                                 <p>${article.description}</p>
-                                <p>Published at: ${new Date(article.publishedAt).toLocaleString()}</p>
+                                <p><strong>Published at:</strong> ${new Date(article.publishedAt).toLocaleString()}</p>
                                 <a href="${article.url}" target="_blank">Read more</a>
                             `;
                             articleDiv.appendChild(articleContentDiv);
