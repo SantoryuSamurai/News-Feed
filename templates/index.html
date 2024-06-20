@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Feed</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        form {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        select, button {
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        select {
+            margin-right: 10px;
+        }
+
+        button {
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #articles {
+            display: grid;
+            gap: 20px;
+        }
+
+        .article {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .article img {
+            max-width: 100%;
+            height: auto;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+
+        .article-content {
+            padding: 20px;
+        }
+
+        .article h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .article p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .article a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+
+        .article a:hover {
+            color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Latest News Feed</h1>
+        <form id="news-form">
+            <label for="country">Select Country:</label>
+            <select id="country">
+                <option value="us">United States</option>
+                <option value="gb">United Kingdom</option>
+                <option value="ca">Canada</option>
+                <option value="au">Australia</option>
+                <!-- Add more countries as needed -->
+            </select>
+            <button type="submit">Get News</button>
+        </form>
+        <div id="articles"></div>
+    </div>
+    <script>
+        document.getElementById('news-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const country = document.getElementById('country').value;
+            fetch(`/news?country=${country}`)
+                .then(response => response.json())
+                .then(data => {
+                    const articlesDiv = document.getElementById('articles');
+                    articlesDiv.innerHTML = '';
+                    if (data.articles) {
+                        data.articles.forEach(article => {
+                            const articleDiv = document.createElement('div');
+                            articleDiv.classList.add('article');
+
+                            // Create image element if article has image
+                            if (article.urlToImage) {
+                                const img = document.createElement('img');
+                                img.src = article.urlToImage;
+                                img.alt = article.title;
+                                articleDiv.appendChild(img);
+                            }
+
+                            // Create content container for title, description, and published date
+                            const articleContentDiv = document.createElement('div');
+                            articleContentDiv.classList.add('article-content');
+                            articleContentDiv.innerHTML = `
+                                <h2>${article.title}</h2>
+                                <p>${article.description}</p>
+                                <p>Published at: ${new Date(article.publishedAt).toLocaleString()}</p>
+                                <a href="${article.url}" target="_blank">Read more</a>
+                            `;
+                            articleDiv.appendChild(articleContentDiv);
+
+                            articlesDiv.appendChild(articleDiv);
+                        });
+                    } else {
+                        articlesDiv.innerHTML = '<p>No articles found.</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+    </script>
+</body>
+</html>
