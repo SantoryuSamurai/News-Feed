@@ -1,27 +1,33 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, jsonify, request, render_template
 import requests
 
 app = Flask(__name__)
 
-API_KEY = '3015e05721af4c649ee3a79cafb5488c'
-BASE_URL = 'https://newsapi.org/v2/top-headlines'
+NEWS_API_KEY = '3015e05721af4c649ee3a79cafb5488c'  # Replace with your News API key
 
+# Route to render index.html
 @app.route('/')
-def home():
+def index():
     return render_template('index.html')
 
-@app.route('/news', methods=['GET'])
-def news():
-    country = request.args.get('country', 'us')
+# Route to fetch news articles
+@app.route('/news')
+def get_news():
+    api_url = 'https://newsapi.org/v2/top-headlines'
     params = {
-        'apiKey': API_KEY,
-        'country': country
+        'apiKey': NEWS_API_KEY,
+        'country': 'us',  # Default to US, change as needed
+        'pageSize': 20  # Adjust page size as needed
     }
-    response = requests.get(BASE_URL, params=params)
-    if response.status_code != 200:
-        return jsonify({'error': 'Failed to fetch data from API'}), 500
 
+    # Check if query parameter 'q' is present (for search)
+    query = request.args.get('q')
+    if query:
+        params['q'] = query
+
+    response = requests.get(api_url, params=params)
     data = response.json()
+
     return jsonify(data)
 
 if __name__ == '__main__':

@@ -88,53 +88,128 @@
         .article a:hover {
             color: #0056b3;
         }
+
+        .search-form {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 60%;
+            max-width: 500px;
+        }
+
+        .search-btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        .search-btn:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Latest Worldwide News Feed</h1>
+        
+        <div class="search-form">
+            <input type="text" id="searchInput" class="search-input" placeholder="Enter keywords...">
+            <button type="button" id="searchBtn" class="search-btn">Search</button>
+        </div>
+
         <div id="articles"></div>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            fetch('/news')
-                .then(response => response.json())
-                .then(data => {
-                    const articlesDiv = document.getElementById('articles');
-                    articlesDiv.innerHTML = '';
-                    if (data.articles) {
-                        data.articles.forEach(article => {
-                            const articleDiv = document.createElement('div');
-                            articleDiv.classList.add('article');
+            const articlesDiv = document.getElementById('articles');
+            const searchInput = document.getElementById('searchInput');
+            const searchBtn = document.getElementById('searchBtn');
 
-                            // Create image element if article has image
-                            if (article.urlToImage) {
-                                const img = document.createElement('img');
-                                img.src = article.urlToImage;
-                                img.alt = article.title;
-                                articleDiv.appendChild(img);
-                            }
+            // Function to fetch and display articles
+            function fetchArticles(query = '') {
+                let apiUrl = '/news';
+                if (query) {
+                    apiUrl += `?q=${query}`;
+                }
 
-                            // Create content container for title, description, and published date
-                            const articleContentDiv = document.createElement('div');
-                            articleContentDiv.classList.add('article-content');
-                            articleContentDiv.innerHTML = `
-                                <h2>${article.title}</h2>
-                                <p>${article.description}</p>
-                                <p><strong>Published at:</strong> ${new Date(article.publishedAt).toLocaleString()}</p>
-                                <a href="${article.url}" target="_blank">Read more</a>
-                            `;
-                            articleDiv.appendChild(articleContentDiv);
+                fetch(apiUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        articlesDiv.innerHTML = '';
+                        if (data.articles) {
+                            data.articles.forEach(article => {
+                                const articleDiv = document.createElement('div');
+                                articleDiv.classList.add('article');
 
-                            articlesDiv.appendChild(articleDiv);
-                        });
-                    } else {
-                        articlesDiv.innerHTML = '<p>No articles found.</p>';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
+                                // Create image element if article has valid image URL
+                                if (article.urlToImage && article.urlToImage !== 'null' && article.urlToImage !== 'undefined') {
+                                    const img = document.createElement('img');
+                                    img.src = article.urlToImage;
+                                    img.alt = article.title;
+                                    articleDiv.appendChild(img);
+                                } else {
+                                    // Optionally, add a placeholder or default image
+                                    const placeholderImg = document.createElement('img');
+                                    placeholderImg.src = 'placeholder-image-url'; // Replace with your placeholder image URL
+                                    placeholderImg.alt = 'Image not available';
+                                    articleDiv.appendChild(placeholderImg);
+                                }
+
+                                // Create content container for title, description, and published date
+                                const articleContentDiv = document.createElement('div');
+                                articleContentDiv.classList.add('article-content');
+                                articleContentDiv.innerHTML = `
+                                    <h2>${article.title}</h2>
+                                    <p>${article.description}</p>
+                                    <p><strong>Published at:</strong> ${new Date(article.publishedAt).toLocaleString()}</p>
+                                    <a href="${article.url}" target="_blank">Read more</a>
+                                `;
+                                articleDiv.appendChild(articleContentDiv);
+
+                                articlesDiv.appendChild(articleDiv);
+                            });
+                        } else {
+                            articlesDiv.innerHTML = '<p>No articles found.</p>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        articlesDiv.innerHTML = '<p>Failed to fetch articles.</p>';
+                    });
+            }
+
+            // Initial fetch of articles
+            fetchArticles();
+
+            // Event listener for search button click
+            searchBtn.addEventListener('click', function() {
+                const query = searchInput.value.trim();
+                if (query !== '') {
+                    fetchArticles(query);
+                } else {
+                    // If search input is empty, fetch all articles
+                    fetchArticles();
+                }
+            });
+
+            // Optional: Listen for Enter key press in search input
+            searchInput.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    searchBtn.click();
+                }
+            });
         });
     </script>
 </body>
